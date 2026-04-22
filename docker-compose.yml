@@ -1,0 +1,269 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: noah_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - noah_net
+
+  postgres:
+    image: postgres:15
+    container_name: noah_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - noah_net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: noah_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - noah_net
+
+  kong:
+    image: kong:3.6
+    container_name: noah_kong
+    restart: unless-stopped
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      order_api:
+        condition: service_started
+      report_service:
+        condition: service_started
+    networks:
+      - noah_net
+
+  legacy_adapter:
+    build:
+      context: ./services/legacy_adapter
+    container_name: noah_legacy_adapter
+    restart: unless-stopped
+    environment:
+      INPUT_DIR: /app/input
+      PROCESSED_DIR: /app/processed
+      POLL_INTERVAL: 5
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_CONNECT_RETRIES: 30
+      DB_RETRY_DELAY: 5
+      LOG_LEVEL: INFO
+    volumes:
+      - ./shared/input:/app/input
+      - ./shared/processed:/app/processed
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - noah_net
+
+  order_api:
+    build:
+      context: ./services/order_api
+    container_name: noah_order_api
+    restart: unless-stopped
+    environment:
+      APP_PORT: 5000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_QUEUE: order_queue
+      CONNECT_RETRIES: 30
+      RETRY_DELAY: 5
+      LOG_LEVEL: INFO
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - noah_net
+
+  order_worker:
+    build:
+      context: ./services/order_worker
+    container_name: noah_order_worker
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_QUEUE: order_queue
+      PROCESSING_DELAY: 2
+      CONNECT_RETRIES: 30
+      RETRY_DELAY: 5
+      LOG_LEVEL: INFO
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - noah_net
+
+  report_service:
+    build:
+      context: ./services/report_service
+    container_name: noah_report_service
+    restart: unless-stopped
+    environment:
+      APP_PORT: 5001
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      CONNECT_RETRIES: 30
+      RETRY_DELAY: 5
+      DEFAULT_LIMIT: 10
+      MAX_LIMIT: 100
+      LOG_LEVEL: INFO
+    ports:
+      - "5001:5001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - noah_net
+
+  dashboard:
+    build:
+      context: ./services/dashboard
+    container_name: noah_dashboard
+    restart: unless-stopped
+    environment:
+      GATEWAY_URL: http://kong:8000
+      API_KEY: noah-secret-key
+      RABBITMQ_MGMT_URL: http://rabbitmq:15672
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
+      DEFAULT_LIMIT: 10
+    ports:
+      - "8501:8501"
+    depends_on:
+      kong:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - noah_net
+
+  swagger_ui:
+    image: swaggerapi/swagger-ui
+    container_name: noah_swagger_ui
+    restart: unless-stopped
+    environment:
+      SWAGGER_JSON: /app/openapi.yaml
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./swagger/openapi.yaml:/app/openapi.yaml
+    networks:
+      - noah_net
+
+networks:
+  noah_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  postgres_data:
+  rabbitmq_data:
