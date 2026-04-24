@@ -1,22 +1,21 @@
 {
   "files": [
-    ".cursorrules",
-    ".github/copilot-instructions.md",
-    ".gitignore",
-    "AGENTS.md",
-    "CLAUDE.md",
-    "GEMINI.md",
-    "services/dashboard/Dockerfile",
-    "services/dashboard/app.py",
-    "services/dashboard/requirements.txt"
+    ".continuity/convergence.json",
+    ".continuity/current-session.json",
+    ".continuity/delta-snapshot.json",
+    ".continuity/metrics.json",
+    ".continuity/unfinished-task.json",
+    ".continuity/working-memory.json",
+    "SESSION_HANDOFF.md"
   ],
   "commits": [
+    "864357c9d6b6202ed1390834459fe6fea51e8a00",
     "abbc25f3d9c4c0c3f8938e0fc46fc8783133aaed",
     "7f23e2dc4455f35fb5ff3d1fc3da5042ca2fbffa",
     "a09cf38229fc0dcd5566da0c98a4c4295048cb65",
     "dfe8431e0e43da18620b7b4e2f8ea2cebad8213f"
   ],
   "decisions": 0,
-  "timestamp": 1777039024598,
+  "timestamp": 1777039158919,
   "decisionIds": []
 }
