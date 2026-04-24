@@ -1,0 +1,7 @@
+{
+  "status": "disconnected",
+  "checkedAt": "2026-04-24T13:53:23.434Z",
+  "serverPath": "c:\\Users\\Admin\\.vscode\\extensions\\hackerware.continuity-ultimate-2.20.44\\packages\\mcp-server\\dist\\index.js",
+  "error": "MCP probe timed out after 15000ms. [GitCommitDetector] Startup audit: 4 uncovered commits in last 7 days (auto-drafted 1)\n[MCP] Background init completed in 1ms",
+  "transport": "stdio"
+}

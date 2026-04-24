@@ -1,0 +1,31 @@
+[
+  {
+    "id": "1777038788714-qkpbim",
+    "question": "Why: setup enviroment?",
+    "answer": "(Auto-drafted from commit a09cf38 on 2026-04-22.) Please review and expand with actual reasoning.",
+    "timestamp": "2026-04-22T22:50:15+07:00",
+    "tags": [
+      "auto-draft",
+      "needs-review"
+    ],
+    "files": [],
+    "relationships": {
+      "supersedes": [],
+      "supersededBy": [],
+      "relatedTo": [],
+      "causes": [],
+      "causedBy": []
+    },
+    "priority": "medium",
+    "status": "draft",
+    "commitHashes": [
+      "a09cf38229fc0dcd5566da0c98a4c4295048cb65"
+    ],
+    "history": [
+      {
+        "timestamp": "2026-04-24T13:53:08.714Z",
+        "action": "created"
+      }
+    ]
+  }
+]

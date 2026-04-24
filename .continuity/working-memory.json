@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-04-24T13:57:04.850Z",
+  "workspaceRoot": "c:\\Users\\Admin\\Downloads\\btvn\\noah-unified-commerce",
+  "sourceVersions": {
+    "unfinishedTaskGeneratedAt": "2026-04-24T13:57:04.683Z",
+    "mcpHealthCheckedAt": "2026-04-24T13:53:23.434Z",
+    "sessionNotesMtime": "2026-04-24T13:53:07.052Z",
+    "decisionsMtime": "2026-04-24T13:53:08.716Z"
+  },
+  "mountState": {
+    "mode": "degraded-fallback",
+    "configured": false,
+    "reachable": false,
+    "initialized": false,
+    "degradedMode": true,
+    "summary": "MCP server disconnected. MCP probe timed out after 15000ms. [GitCommitDetector] Startup audit: 4 uncovered commits in last 7 days (auto-drafted 1)\n[MCP] Background init completed in 1ms",
+    "unavailableCoreTools": [
+      "get_quick_context",
+      "search_decisions",
+      "log_decision",
+      "update_session_notes",
+      "read_session_notes"
+    ]
+  },
+  "resume": {
+    "lastTask": null,
+    "lastCompletedMilestone": null,
+    "nextExpectedStep": null
+  },
+  "session": {
+    "goals": [],
+    "blockers": [],
+    "openQuestions": []
+  },
+  "repo": {
+    "name": "noah-unified-commerce",
+    "type": "Software Project",
+    "language": null,
+    "path": "c:\\Users\\Admin\\Downloads\\btvn\\noah-unified-commerce",
+    "branch": "module-4",
+    "ahead": 0,
+    "behind": 0,
+    "hasUncommittedChanges": true,
+    "recentCommits": [
+      {
+        "hash": "abbc25f3d9c4c0c3f8938e0fc46fc8783133aaed",
+        "message": "Finished Module 3(order_api, order_worker, report_service)",
+        "date": "2026-04-24T15:10:17+07:00"
+      },
+      {
+        "hash": "7f23e2dc4455f35fb5ff3d1fc3da5042ca2fbffa",
+        "message": "feat: hoàn thành module-2 và xử lý dữ liệu lỗi csv",
+        "date": "2026-04-23T19:58:04+07:00"
+      },
+      {
+        "hash": "a09cf38229fc0dcd5566da0c98a4c4295048cb65",
+        "message": "setup enviroment",
+        "date": "2026-04-22T22:50:15+07:00"
+      },
+      {
+        "hash": "dfe8431e0e43da18620b7b4e2f8ea2cebad8213f",
+        "message": "first commit",
+        "date": "2026-04-22T20:45:05+07:00"
+      }
+    ],
+    "relevantFiles": [
+      "services\\dashboard\\app.py",
+      ".cursorrules",
+      ".github/copilot-instructions.md",
+      ".gitignore",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "GEMINI.md",
+      "services/dashboard/Dockerfile",
+      "services/dashboard/app.py",
+      "services/dashboard/requirements.txt"
+    ]
+  },
+  "memory": {
+    "totalDecisions": 1,
+    "topics": [
+      "auto-draft",
+      "needs-review"
+    ],
+    "recentDecisions": [
+      {
+        "id": "1777038788714-qkpbim",
+        "question": "Why: setup enviroment?",
+        "timestamp": "2026-04-22T22:50:15+07:00"
+      }
+    ],
+    "lastSuccessfulToolCall": null
+  },
+  "bootstrap": {
+    "startupSummary": "mode=degraded-fallback | decisions=1 | branch=module-4 | health=MCP server disconnected. MCP probe timed out after 15000ms. [GitCommitDetector] Startup audit: 4 uncovered commits in last 7 days (auto-drafted 1)\n[MCP] Background init completed in 1ms | fallback-files=12",
+    "fallbackContextFiles": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "GEMINI.md",
+      ".cursorrules",
+      ".github/copilot-instructions.md",
+      ".continuity/INSTRUCTIONS.md",
+      ".continuity/SESSION_NOTES.md",
+      ".continuity/mcp-health.json",
+      ".continuity/unfinished-task.json",
+      ".continuity/working-memory.json",
+      "SESSION_HANDOFF.md",
+      ".continuity/decisions.json"
+    ]
+  }
+}

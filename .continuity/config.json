@@ -1,0 +1,15 @@
+{
+  "license": {
+    "tier": "trial",
+    "syncedAt": "2026-04-24T13:53:17.137Z"
+  },
+  "trial": {
+    "startedAt": 1776667748920,
+    "expiresAt": 1777877348920,
+    "trialPhase": "active",
+    "decisionsBeforeTrial": 1,
+    "syncedAt": "2026-04-24T13:53:07.125Z"
+  },
+  "aiInstructionImportPrompted": true,
+  "aiInstructionImportPromptedAt": "2026-04-24T13:53:42.807Z"
+}

@@ -1,0 +1,10 @@
+{
+  "agents": {
+    "Claude Code": {
+      "agentId": "Claude Code",
+      "knownDecisionIds": [],
+      "lastSync": 1777039024620,
+      "totalSyncs": 9
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "startedAt": "2026-04-24T13:53:08.359Z",
+  "completedAt": "2026-04-24T13:53:08.382Z",
+  "duration": 23,
+  "phases": {
+    "orient": {
+      "totalDecisions": 0,
+      "activeDecisions": 0,
+      "lastDreamTimestamp": null,
+      "sessionsSinceLastDream": 0,
+      "topTags": []
+    },
+    "gatherSignal": {
+      "duplicatePairs": [],
+      "contradictions": [],
+      "staleCandidates": [],
+      "orphanedRelationships": []
+    },
+    "consolidate": {
+      "merged": [],
+      "statusUpdates": [],
+      "relationshipsAdded": 0,
+      "datesNormalized": 0
+    },
+    "pruneAndIndex": {
+      "archived": [],
+      "indexGenerated": true,
+      "indexPath": "c:\\Users\\Admin\\Downloads\\btvn\\noah-unified-commerce\\.continuity\\DECISION_INDEX.md"
+    }
+  },
+  "summary": {
+    "decisionsReviewed": 0,
+    "duplicatesMerged": 0,
+    "contradictionsFound": 0,
+    "contradictionsResolved": 0,
+    "staleArchived": 0,
+    "relationshipsDiscovered": 0,
+    "qualityScoresUpdated": 0,
+    "dateNormalizationsApplied": 0
+  }
+}
