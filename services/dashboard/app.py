@@ -158,7 +158,6 @@ with c[4]:
 
 if report_error:
     st.error(f"Không tải được report qua Kong Gateway: {report_error}")
-    st.info("Gợi ý: đừng refresh liên tục. Kong đang rate limit 10 request/phút theo đề bài.")
     st.stop()
 
 summary = report.get("summary", {})
@@ -278,7 +277,6 @@ table_col, side_col = st.columns([2.1, 1])
 with table_col:
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown("### Reconciliation View (Data Stitching)")
-    st.caption("Bảng dưới đây là dữ liệu đã được ghép giữa MySQL (orders/products) và PostgreSQL (finance_transactions) theo `order_id`.")
 
     if orders_in_page > 0:
         start_row = (current_page - 1) * int(limit) + 1

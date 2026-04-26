@@ -2,7 +2,11 @@ import json
 import logging
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from decimal import Decimal
+from urllib import error, request
+from zoneinfo import ZoneInfo
 
 import pika
 import pymysql
@@ -41,6 +45,14 @@ RABBITMQ_QUEUE = os.getenv("RABBITMQ_QUEUE", "order_queue")
 PROCESSING_DELAY = int(os.getenv("PROCESSING_DELAY", "2"))
 CONNECT_RETRIES = int(os.getenv("CONNECT_RETRIES", "30"))
 RETRY_DELAY = int(os.getenv("RETRY_DELAY", "5"))
+
+TELEGRAM_ENABLED = os.getenv("TELEGRAM_ENABLED", "false").lower() == "true"
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+TELEGRAM_API_TIMEOUT = int(os.getenv("TELEGRAM_API_TIMEOUT", "5"))
+NOTIFICATION_WORKERS = int(os.getenv("NOTIFICATION_WORKERS", "4"))
+
+notification_executor = ThreadPoolExecutor(max_workers=NOTIFICATION_WORKERS)
 
 
 def wait_for_mysql() -> None:
@@ -105,6 +117,72 @@ def ensure_finance_table() -> None:
         conn.close()
 
 
+def is_telegram_configured() -> bool:
+    return TELEGRAM_ENABLED and bool(TELEGRAM_BOT_TOKEN) and bool(TELEGRAM_CHAT_ID)
+
+
+def build_notification_message(order_id, user_id, total_price, synced_time=None):
+    vietnam_time = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    formatted_time = vietnam_time.strftime("%d-%m-%Y %H:%M:%S")
+    formatted_price = f"${Decimal(str(total_price)):,.2f}"
+
+    return (
+        f"Xin chào User {user_id},\n\n"
+        f"🧾 Đơn hàng: #{order_id}\n\n"
+        f"💰 Trị giá: {formatted_price}\n\n"
+        f"✅ Trạng thái: Thanh toán thành công\n\n"
+        f"🕒 Thời gian: {formatted_time}"
+    )
+
+
+def send_telegram_notification(message_text: str) -> None:
+    if not is_telegram_configured():
+        raise RuntimeError(
+            "Telegram notification is not configured. "
+            "Please set TELEGRAM_ENABLED=true, TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID."
+        )
+
+    payload = json.dumps({
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message_text,
+    }).encode("utf-8")
+
+    telegram_request = request.Request(
+        url=f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    with request.urlopen(telegram_request, timeout=TELEGRAM_API_TIMEOUT) as response:
+        response_body = response.read().decode("utf-8")
+        telegram_response = json.loads(response_body)
+        if not telegram_response.get("ok"):
+            raise RuntimeError(f"Telegram API returned an error: {telegram_response}")
+
+
+def notify_order_synced_async(order_id: int, user_id: int, total_price: Decimal, synced_time: datetime) -> None:
+    if not TELEGRAM_ENABLED:
+        logger.info("Order #%s synced. Notification skipped because TELEGRAM_ENABLED=false.", order_id)
+        return
+
+    message_text = build_notification_message(order_id, user_id, total_price, synced_time)
+    future = notification_executor.submit(send_telegram_notification, message_text)
+
+    def _log_notification_result(done_future) -> None:
+        try:
+            done_future.result()
+            logger.info("Order #%s synced. Notification sent to user.", order_id)
+        except Exception as notification_error:
+            logger.warning(
+                "Order #%s synced, but Telegram notification failed: %s",
+                order_id,
+                notification_error,
+            )
+
+    future.add_done_callback(_log_notification_result)
+
+
 def process_message(ch, method, properties, body):
     message = json.loads(body.decode("utf-8"))
     order_id = int(message["order_id"])
@@ -139,6 +217,9 @@ def process_message(ch, method, properties, body):
                 (order_id,),
             )
             my_conn.commit()
+
+        synced_time = datetime.now()
+        notify_order_synced_async(order_id, user_id, total_price, synced_time)
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
         logger.info("Order #%s synced successfully. PostgreSQL inserted, MySQL updated, ACK sent.", order_id)
