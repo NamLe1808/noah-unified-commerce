@@ -147,8 +147,6 @@ services:
       CONNECT_RETRIES: 30
       RETRY_DELAY: 5
       LOG_LEVEL: INFO
-    ports:
-      - "5000:5000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -214,8 +212,6 @@ services:
       DEFAULT_LIMIT: 10
       MAX_LIMIT: 100
       LOG_LEVEL: INFO
-    ports:
-      - "5001:5001"
     depends_on:
       mysql:
         condition: service_healthy
